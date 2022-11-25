@@ -1,0 +1,62 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# feminicidio
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+Leitura das bases de dados:
+
+```{r}
+#| message: false
+#| warning: false
+library(tidyverse)
+
+capa <- read_rds("data-raw/capa.rds")                   ## informações básicas
+partes <- read_rds("data-raw/partes.rds")               ## partes do processo
+movimentacoes <- read_rds("data-raw/movimentacoes.rds") ## log de eventos
+decisoes <- read_rds("data-raw/decisoes.rds")           ## textos decisões
+
+```
+
+
+A chave para ligar as bases é sempre `n_processo`. A base 
+
+- Em `capa`, cada linha é um processo.
+- Em `partes`, cada linha é um processo-parte-papel. Papel pode ser autor, réu etc.
+- Em `movimentacoes`, cada linha é um processo-data-movimento
+- Em `decisoes`, cada linha é uma decisão. Um processo pode ter várias decisões, então pode acabar repetindo por processo. A base também tem processos que não estão em `capa`, pois em alguns casos é possível obter a sentença do processo mas não é possível obter as informações do caso (segredo de justiça, por ex).
+
+
+Abaixo, as colunas de cada base
+
+```{r}
+glimpse(capa)
+```
+
+```{r}
+glimpse(partes)
+
+```
+
+```{r}
+glimpse(movimentacoes)
+
+```
+
+
+```{r}
+glimpse(decisoes)
+```
+
