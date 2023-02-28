@@ -1,5 +1,23 @@
 # lista de assuntos -------------------------------------------------------
-tabela <- lex::tjsp_cjpg_table("assunto")
+tabela <- stringr::str_c("https://esaj.tjsp.jus.br/cjpg/", tipo, "TreeSelect.do?campoId=", tipo) |> 
+  httr::GET(httr::config(ssl_verifypeer = FALSE), lex:::esaj_ua()) |> 
+  httr::content("text") |> 
+  xml2::read_html() |> 
+  xml2::xml_find_all("//div[@class='treeView']") |> 
+  xml2::as_list() |> 
+  dplyr::first() |> 
+  dplyr::nth(2) |> 
+  purrr::keep(~is.list(.x)) |> 
+  lex:::tree_to_tibble() |> 
+  dplyr::mutate(
+    name0 = ifelse(is.na(name0), name5, name0), 
+    id0 = ifelse(is.na(id0), id5, id0)
+  ) |> 
+  dplyr::select(
+    dplyr::ends_with("0"), dplyr::ends_with("1"), 
+    dplyr::ends_with("2"), dplyr::ends_with("3"), 
+    dplyr::ends_with("4"), dplyr::ends_with("5")
+  )
 
 feminicidio <- tabela |>
   dplyr::filter(dplyr::if_any(
@@ -18,7 +36,6 @@ purrr::walk(feminicidio$id5, \(x) {
   fs::dir_create(dir_assunto)
   lex::tjsp_cjpg_download("", dir = dir_assunto, assunto = x)
 })
-
 
 # parse cjpg --------------------------------------------------------------
 da_cjpg <- path_cjpg |>
@@ -66,11 +83,20 @@ da_cpopg_capa <- da_cpopg |>
 
 # export ------------------------------------------------------------------
 
-readr::write_rds(da_cjpg, "/Users/julio/Downloads/feminicidio/decisoes.rds")
-readr::write_rds(da_cpopg_capa, "/Users/julio/Downloads/feminicidio/capa.rds")
-readr::write_rds(da_cpopg_partes, "/Users/julio/Downloads/feminicidio/partes.rds")
-readr::write_rds(da_cpopg_movimentacoes, "/Users/julio/Downloads/feminicidio/movimentacoes.rds")
+readr::write_rds(da_cjpg, "data-raw/decisoes.rds")
+readr::write_rds(da_cpopg_capa, "data-raw/capa.rds")
+readr::write_rds(da_cpopg_partes, "data-raw/partes.rds")
+readr::write_rds(da_cpopg_movimentacoes, "data-raw/movimentacoes.rds")
 
+# upload ------------------------------------------------------------------
 
+# piggyback::pb_new_release(tag= "atualizacao_20230228")
+piggyback::pb_upload("data-raw/decisoes.rds", tag = "atualizacao_20230228")
+piggyback::pb_upload("data-raw/capa.rds", tag = "atualizacao_20230228")
+piggyback::pb_upload("data-raw/partes.rds", tag = "atualizacao_20230228")
+piggyback::pb_upload("data-raw/movimentacoes.rds", tag = "atualizacao_20230228")
+
+piggyback::pb_upload("data-raw/cjpg.zip", tag = "atualizacao_20230228")
+piggyback::pb_upload("data-raw/cpopg.zip", tag = "atualizacao_20230228")
 
 
